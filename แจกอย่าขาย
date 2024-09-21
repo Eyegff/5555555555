@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>จัดการ V2Ray</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome สำหรับไอคอน -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%);
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hidden {
+            display: none;
+        }
+        .section {
+            margin-top: 30px;
+        }
+        .btn-custom {
+            background-color: #4CAF50;
+            color: #ffffff;
+            transition: background-color 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #45a049;
+            color: #ffffff;
+        }
+        .response-message {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            font-weight: bold;
+            color: #343a40;
+        }
+        /* Toast Styles */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+        }
+        @media (max-width: 576px) {
+            .container {
+                margin-top: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- หน้าล็อกอิน -->
+        <div id="login-section">
+            <div class="header">
+                <i class="fa fa-lock fa-3x text-primary"></i>
+                <h2>เข้าสู่ระบบ</h2>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">ชื่อผู้ใช้</label>
+                <input type="text" class="form-control" id="username" placeholder="ชื่อผู้ใช้" value="admin">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">รหัสผ่าน</label>
+                <input type="password" class="form-control" id="password" placeholder="รหัสผ่าน" value="admin">
+            </div>
+            <button id="login-button" class="btn btn-custom w-100"><i class="fa fa-sign-in-alt"></i> เข้าสู่ระบบ</button>
+        </div>
+
+        <!-- หน้าจัดการหลังจากล็อกอิน -->
+        <div id="management-section" class="hidden">
+            <div class="header">
+                <i class="fa fa-cogs fa-3x text-success"></i>
+                <h2>จัดการ V2Ray</h2>
+            </div>
+
+            <!-- สร้างโค้ด -->
+            <div class="section">
+                <h4><i class="fa fa-user-plus"></i> สร้างโค้ด</h4>
+                <button id="create-client-button" class="btn btn-success w-100"><i class="fa fa-plus-circle"></i> สร้างไคลเอนต์ใหม่</button>
+            </div>
+
+            <!-- อัพเดทไคลเอนต์ -->
+            <div class="section">
+                <h4><i class="fa fa-user-edit"></i> อัพเดทไคลเอนต์</h4>
+                <div class="mb-3">
+                    <label for="update-client-id" class="form-label">ID ไคลเอนต์</label>
+                    <input type="text" class="form-control" id="update-client-id" placeholder="ID ไคลเอนต์">
+                </div>
+                <div class="mb-3">
+                    <label for="update-email" class="form-label">อีเมลใหม่</label>
+                    <input type="email" class="form-control" id="update-email" placeholder="อีเมลใหม่">
+                </div>
+                <button id="update-client-button" class="btn btn-warning w-100"><i class="fa fa-edit"></i> อัพเดทไคลเอนต์</button>
+            </div>
+
+            <!-- ลบโค้ด -->
+            <div class="section">
+                <h4><i class="fa fa-user-minus"></i> ลบโค้ด</h4>
+                <div class="mb-3">
+                    <label for="delete-client-id" class="form-label">ID ไคลเอนต์</label>
+                    <input type="text" class="form-control" id="delete-client-id" placeholder="ID ไคลเอนต์">
+                </div>
+                <button id="delete-client-button" class="btn btn-danger w-100"><i class="fa fa-trash-alt"></i> ลบไคลเอนต์</button>
+            </div>
+
+            <button id="logout-button" class="btn btn-secondary w-100 mt-4"><i class="fa fa-sign-out-alt"></i> ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Bootstrap JS และ Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // ฟังก์ชั่นแสดง Toast
+            function showToast(message, type) {
+                var toastHTML = `
+                    <div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                $('#toast-container').append(toastHTML);
+                var toastElement = $('#toast-container .toast').last();
+                var bsToast = new bootstrap.Toast(toastElement, { delay: 4000 });
+                bsToast.show();
+
+                // ลบ toast หลังจากปิด
+                toastElement.on('hidden.bs.toast', function () {
+                    $(this).remove();
+                });
+            }
+
+            // ฟังก์ชั่นล็อกอิน
+            $('#login-button').click(function() {
+                var settings = {
+                    "url": "http://localhost:2053/login",
+                    "method": "POST",
+                    "timeout": 0,
+                    "contentType": "application/json",
+                    "data": JSON.stringify({
+                        "username": $("#username").val(),
+                        "password": $("#password").val()
+                    })
+                };
+                
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                    // สมมติว่า response มี token หรือสถานะการล็อกอินสำเร็จ
+                    if(response.success) {
+                        showToast('เข้าสู่ระบบสำเร็จ!', 'success');
+                        $('#login-section').addClass('hidden');
+                        $('#management-section').removeClass('hidden');
+                    } else {
+                        showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'danger');
+                    }
+                }).fail(function() {
+                    showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
+                });
+            });
+
+            // ฟังก์ชั่นออกจากระบบ
+            $('#logout-button').click(function() {
+                $('#management-section').addClass('hidden');
+                $('#login-section').removeClass('hidden');
+                // รีเซ็ตฟิลด์
+                $('#username').val('');
+                $('#password').val('');
+                showToast('ออกจากระบบเรียบร้อยแล้ว', 'warning');
+            });
+
+            // ฟังก์ชั่นสร้างไคลเอนต์
+            $('#create-client-button').click(function() {
+                var settings = {
+                    "url": "http://localhost:2053/panel/api/inbounds/addClient",
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    "data": JSON.stringify({
+                        "id": 1,
+                        "settings": JSON.stringify({
+                            "clients": [{
+                                "id": "95e4e7bb-7796-47e7-e8a7-f4055194f776",
+                                "alterId": 0,
+                                "email": "New Client",
+                                "limitIp": 2,
+                                "totalGB": 42949672960,
+                                "expiryTime": Date.now() + 30*24*60*60*1000, // ตัวอย่าง: 30 วันจากนี้
+                                "enable": true,
+                                "tgId": "",
+                                "subId": ""
+                            }]
+                        })
+                    }),
+                };
+                
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                    showToast('สร้างไคลเอนต์สำเร็จ!', 'success');
+                }).fail(function() {
+                    showToast('เกิดข้อผิดพลาดในการสร้างไคลเอนต์', 'danger');
+                });
+            });
+
+            // ฟังก์ชั่นอัพเดทไคลเอนต์
+            $('#update-client-button').click(function() {
+                var clientId = $('#update-client-id').val();
+                var newEmail = $('#update-email').val();
+
+                if(!clientId || !newEmail) {
+                    showToast('กรุณากรอก ID ไคลเอนต์และอีเมลใหม่', 'warning');
+                    return;
+                }
+
+                var settings = {
+                    "url": "http://localhost:2053/panel/api/inbounds/updateClient/" + clientId,
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    "data": JSON.stringify({
+                        "id": 1,
+                        "settings": JSON.stringify({
+                            "clients": [{
+                                "id": clientId,
+                                "alterId": 0,
+                                "email": newEmail,
+                                "limitIp": 2,
+                                "totalGB": 42949672960,
+                                "expiryTime": Date.now() + 30*24*60*60*1000, // ตัวอย่าง: 30 วันจากนี้
+                                "enable": true,
+                                "tgId": "",
+                                "subId": ""
+                            }]
+                        })
+                    }),
+                };
+                
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                    showToast('อัพเดทไคลเอนต์สำเร็จ!', 'success');
+                }).fail(function() {
+                    showToast('เกิดข้อผิดพลาดในการอัพเดทไคลเอนต์', 'danger');
+                });
+            });
+
+            // ฟังก์ชั่นลบไคลเอนต์
+            $('#delete-client-button').click(function() {
+                var clientId = $('#delete-client-id').val();
+
+                if(!clientId) {
+                    showToast('กรุณากรอก ID ไคลเอนต์', 'warning');
+                    return;
+                }
+
+                var settings = {
+                    "url": "http://localhost:2053/panel/api/inbounds/1/delClient/" + clientId,
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                        "Accept": "application/json"
+                    },
+                };
+                
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                    showToast('ลบไคลเอนต์สำเร็จ!', 'success');
+                }).fail(function() {
+                    showToast('เกิดข้อผิดพลาดในการลบไคลเอนต์', 'danger');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
